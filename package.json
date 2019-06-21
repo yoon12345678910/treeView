@@ -23,9 +23,6 @@
     "babel-eslint": "^10.0.1",
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
-    "jsdom": "^15.1.1",
-    "kind-of": "^6.0.2",
-    "v-ztree": "^1.2.0",
     "vue-template-compiler": "^2.6.10",
     "ztree": "^3.5.24"
   },
