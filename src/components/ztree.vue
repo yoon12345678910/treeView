@@ -1,16 +1,13 @@
 
 <!-- =====================================================
  =
- =    zTree -- jQuery tree plug-ins.
+ =    v.0.1 
+ =    zTree jQuery plugin - Wrapper component
+ =    updated: 2019-06-22
+ =
  =    http://www.treejs.cn/v3/main.php
  =
- =
- =
- =    v.TEST
- =
- =    author:  Jongik Yoon <yji1221@gmail.com>
- =    updated: 2019-06-22
- =        
+ = 
  =
  ====================================================== --> 
 
@@ -19,14 +16,13 @@
 </template>
 
 <script>
-  import ztree from 'ztree'
+  import ztree from '@ztree/ztree_v3/js/jquery.ztree.core'
 
   export default {
     name: 'ztree',
     props: {
-      expandAll: {
-        type: Boolean,
-        default: true
+      treeId: {
+        type: [String, Number]
       },
       nodes: {
         type: Array,
@@ -34,23 +30,31 @@
           return [];
         }
       },
-      settings: {
+      zTreeSettings: {
         type: Object,
         default: function () {
           return {};
         }
       },
       selectId: {
-        type: [String, Number]
+        type: [String, Number],
+        default: ''
       },
-      treeId: {
-        type: [String, Number]
-      }
+      expandAll: {
+        type: Boolean,
+        default: true
+      },
     },
     data () {
       return {
-        $_treeId: ''
+        $_treeId: '',
+        $_zTree: null
       };
+    },
+    watch: {
+      selectId () {
+        this.selectedNode(this.selectId);
+      }
     },
     methods: {
       // https://stackoverflow.com/questions/27936772/how-to-deep-merge-instead-of-shallow-merge/48579540
@@ -67,9 +71,21 @@
           }
         }
         return target;
+      },
+      selectedNode (id) {
+        this.$_zTree.selectNode(this.$_zTree.getNodeByParam('id', id));
+      },
+      // callback 설정을 뷰 디렉티브 이벤트로 대체
+      mappingCallback () {
+        return Object.keys(this._events)
+          .reduce((acc, key) => {
+            acc[key] = this._events[key][0].fns;
+            return acc;
+          }, {});
       }
     },
     mounted () {
+      // zTree default 설정
       const defaults = {
         data: {
           simpleData: {
@@ -78,41 +94,32 @@
         },
         view: {
           selectedMulti: false
-        },
-        callback: {}
+        }
       };
 
       // merge data
-      const settings = this.mergeDeep(this.settings, defaults);
+      const settings = this.mergeDeep(this.zTreeSettings, defaults);
+      settings.callback = this.mappingCallback();
 
-      // tree id
+      // ID(유일)로 zTree jQuery Init
       this.$_treeId = this.treeId || `zTree-${new Date().getTime()}`;
       this.$refs.ztree.id = this.$_treeId;
-
-      // zTree 생성
       $.fn.zTree.init($(this.$refs.ztree), settings, this.nodes);
 
-      const $zTree = $.fn.zTree.getZTreeObj(this.$_treeId);
+      // zTree Object 할당
+      this.$_zTree = $.fn.zTree.getZTreeObj(this.$_treeId);
 
       // Node 모두 열기
-      if (this.expandAll) $zTree.expandAll(true);
+      if (this.expandAll) this.$_zTree.expandAll(true);
 
       // 초기 Node 선택
-      if (typeof this.selectId === 'string' || typeof this.selectId === 'number') {
-        $zTree.selectNode($zTree.getNodeByParam('id', this.selectId));
-      }
-
-      // 생성되면 treeId, object return
-      if (typeof settings.callback.completed === 'function') {
-        settings.callback.completed(this.$_treeId, $zTree);
-      }
-
+      this.selectedNode(this.selectId);
     }
   };
 </script>
 
 <style>
-  @import '~ztree/css/zTreeStyle/zTreeStyle.css';
+  @import '~@ztree/ztree_v3/css/zTreeStyle/zTreeStyle.css';
 
   .ztree * { 
     font-size: 14px; 
