@@ -1,5 +1,10 @@
 <template>
   <div id="app">
+    <button 
+        @click="createTree"
+        type="button">
+        Create Tree
+    </button>
     <ztree 
       :treeId="ztreeId"
       :nodes="ztreeNodes" 
@@ -7,11 +12,6 @@
       @beforeClick="beforeClick"
       @onClick="onClick"
     />
-    <!-- <div>
-      <pre v-show="isParentNode">
-        <code> {{ childrenNodes }} </code>
-      </pre>
-    </div>
     <div>
       <input 
         v-model="moveNodeText"
@@ -23,7 +23,14 @@
         type="button">
         이동
       </button>
-    </div> -->
+    </div>
+    <div>
+      <button 
+        @click="changeTree"
+        type="button">
+        데이터 변경 TEST
+      </button>
+    </div>
   </div>
 </template>
 
@@ -37,8 +44,17 @@
     },
     data: function () {
       return {
-        ztreeId: 'tree-test-001',
-        ztreeNodes: [
+        ztreeId: '',
+        ztreeNodes: [],
+        selectId: '',
+        selectedNode: {},
+        moveNodeText: '',
+      };
+    },
+    methods: {
+      createTree: function () {
+        this.ztreeId = 'tree-test-001';
+        this.ztreeNodes = [
           { id: 'luna', pId: 'root', name: 'ROOT / luna', testData: [1, 2, 3, 4, 5], children: [
             { id: 'main', name: '메인 / main', isParent: true},
             { id: 'admin', name: '관리자 / admin', isParent: true, children: [
@@ -54,15 +70,42 @@
               { id: 'serviceSetting', name: '서비스세팅 / serviceSetting' }
             ]}
           ]}
-        ],
-        selectId: 'luna',
-      };
-    },
-    methods: {
+        ];
+        this.selectId = 'luna';
+      },
       beforeClick: function (treeId, treeNode) {
       },
       onClick: function (event, treeId, treeNode) {
         this.selectId = treeNode.serviceSetting;
+        if (treeNode.isParent) {
+          console.log('getChildrenNode', treeNode.children)
+        } else {
+          console.log('getParentNode', treeNode.getParentNode().children)
+        }
+      },
+      moveNode: function () {
+        this.selectId = this.moveNodeText;
+      },
+      changeTree: function () {
+        this.ztreeId = 'tree-test-002';
+        this.ztreeNodes = [
+          { id: 'luna2', pId: 'root', name: 'ROOT /* luna', testData: [1, 2, 3, 4, 5], children: [
+            { id: 'main2', name: '메인 /* main', isParent: true},
+            { id: 'admin2', name: '관리자 /* admin', isParent: true, children: [
+              { id: 'account2', name: '계정관리 /* account' },
+              { id: 'auth2', name: '권한관리 /* auth' },
+              { id: 'menu2', name: '메뉴관리 /* menu' },
+            ]},
+            { id: 'member2', name: '회원관리 /* member', isParent: true},
+            { id: 'business2', name: '영업관리 /* business', isParent: true, children: [
+              { id: 'businessCheck2', pId: 'business', name: '영업조회 /* businessCheck'},
+            ]},
+            { id: 'service2', name: '서비스관리 /* service', isParent: true, children: [
+              { id: 'serviceSetting2', name: '서비스세팅 /* serviceSetting' }
+            ]}
+          ]}
+        ];
+        this.selectId = 'member2';
       }
     }
 }

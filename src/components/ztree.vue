@@ -30,7 +30,7 @@
           return [];
         }
       },
-      zTreeSettings: {
+      setting: {
         type: Object,
         default: function () {
           return {};
@@ -48,13 +48,26 @@
     data () {
       return {
         $_treeId: '',
-        $_zTree: null
+        $_zTree: null,
+        defaults: {
+          data: {
+            simpleData: {
+              enable: true
+            }
+          },
+          view: {
+            selectedMulti: false
+          }
+        }
       };
     },
     watch: {
+      nodes () {
+        if (this.nodes.length) this.createTree();
+      },
       selectId () {
         this.selectedNode(this.selectId);
-      }
+      },
     },
     methods: {
       // https://stackoverflow.com/questions/27936772/how-to-deep-merge-instead-of-shallow-merge/48579540
@@ -72,9 +85,6 @@
         }
         return target;
       },
-      selectedNode (id) {
-        this.$_zTree.selectNode(this.$_zTree.getNodeByParam('id', id));
-      },
       // callback 설정을 뷰 디렉티브 이벤트로 대체
       mappingCallback () {
         return Object.keys(this._events)
@@ -82,38 +92,40 @@
             acc[key] = this._events[key][0].fns;
             return acc;
           }, {});
-      }
+      },
+      createTree () {
+        // ID(유일)로 zTree jQuery Init
+        this.$_treeId = this.treeId || `zTree-${new Date().getTime()}`;
+        this.$refs.ztree.id = this.$_treeId;
+        $.fn.zTree.init($(this.$refs.ztree), this.defaults, this.nodes);
+
+        // zTree Object 할당
+        this.$_zTree = $.fn.zTree.getZTreeObj(this.$_treeId);
+
+        // Node 모두 열기
+        if (this.expandAll) this.$_zTree.expandAll(true);
+
+        // 초기 Node 선택
+        this.selectedNode(this.selectId);
+      },
+      destroyTree () {
+        if (this.$_zTree) this.$_zTree.destroy();
+      },
+      selectedNode (id) {
+        this.$_zTree.selectNode(this.$_zTree.getNodeByParam('id', id));
+      },
+    },
+    beforeDestroy () {
+      this.destroyTree();
     },
     mounted () {
-      // zTree default 설정
-      const defaults = {
-        data: {
-          simpleData: {
-            enable: true
-          }
-        },
-        view: {
-          selectedMulti: false
-        }
-      };
-
       // merge data
-      const settings = this.mergeDeep(this.zTreeSettings, defaults);
-      settings.callback = this.mappingCallback();
-
-      // ID(유일)로 zTree jQuery Init
-      this.$_treeId = this.treeId || `zTree-${new Date().getTime()}`;
-      this.$refs.ztree.id = this.$_treeId;
-      $.fn.zTree.init($(this.$refs.ztree), settings, this.nodes);
-
-      // zTree Object 할당
-      this.$_zTree = $.fn.zTree.getZTreeObj(this.$_treeId);
-
-      // Node 모두 열기
-      if (this.expandAll) this.$_zTree.expandAll(true);
-
-      // 초기 Node 선택
-      this.selectedNode(this.selectId);
+      const setting = this.mergeDeep(this.setting, this.defaults);
+      setting.callback = this.mappingCallback();
+      this.defaults = setting;
+    },
+    updated () {
+      console.log('updated', this,this.nodes)
     }
   };
 </script>
