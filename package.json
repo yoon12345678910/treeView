@@ -10,7 +10,7 @@
   "dependencies": {
     "@ztree/ztree_v3": "^3.5.40",
     "core-js": "^2.6.5",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "location": "^0.0.1",
     "navigator": "^1.0.1",
     "vue": "^2.6.10",
